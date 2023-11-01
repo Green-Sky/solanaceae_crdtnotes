@@ -13,6 +13,8 @@ else()
 endif()
 message("II SOLANACEAE_CRDTNOTES_STANDALONE " ${SOLANACEAE_CRDTNOTES_STANDALONE})
 
+option(SOLANACEAE_CRDTNOTES_BUILD_PLUGINS "Build the crdtnotes plugins" ${SOLANACEAE_CRDTNOTES_STANDALONE})
+
 if (SOLANACEAE_CRDTNOTES_STANDALONE)
 	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -31,7 +33,7 @@ if (SOLANACEAE_CRDTNOTES_STANDALONE)
 endif()
 
 # external libs
-add_subdirectory(./external) # before increasing warn levels, sad :(
+add_subdirectory(./external EXCLUDE_FROM_ALL) # before increasing warn levels, sad :(
 
 if (SOLANACEAE_CRDTNOTES_STANDALONE)
 	set(CMAKE_CXX_EXTENSIONS OFF)
@@ -64,4 +66,8 @@ endif()
 # cmake setup end
 
 add_subdirectory(./src)
+
+if (SOLANACEAE_CRDTNOTES_BUILD_PLUGINS)
+	add_subdirectory(./plugins)
+endif()
 

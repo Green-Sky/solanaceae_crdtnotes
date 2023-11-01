@@ -13,3 +13,17 @@ target_link_libraries(solanaceae_crdtnotes PUBLIC
 
 ########################################
 
+add_library(solanaceae_crdtnotes_imgui
+	./solanaceae/crdtnotes_imgui/crdtnotes_imgui.hpp
+	./solanaceae/crdtnotes_imgui/crdtnotes_imgui.cpp
+)
+target_include_directories(solanaceae_crdtnotes_imgui PUBLIC .)
+target_compile_features(solanaceae_crdtnotes_imgui PUBLIC cxx_std_17)
+target_link_libraries(solanaceae_crdtnotes_imgui PUBLIC
+	solanaceae_crdtnotes
+	#imgui_interface
+	imgui
+	#solanaceae_util
+)
+
+########################################
