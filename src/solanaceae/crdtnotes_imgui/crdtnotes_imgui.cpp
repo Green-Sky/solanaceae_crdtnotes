@@ -9,6 +9,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include <iostream>
+#include <cassert>
 
 namespace detail {
 	uint8_t nib_from_hex(char c) {
@@ -60,10 +61,20 @@ float CRDTNotesImGui::render(void) {
 				for (const auto& c : _cr.view<Contact::Components::TagBig>()) {
 					if (renderContactListContactSmall(c, false)) {
 						const auto& self = _cr.get<Contact::Components::Self>(c).self;
+						assert(_cr.all_of<Contact::Components::ID>(self));
+						const auto& self_id = _cr.get<Contact::Components::ID>(self);
+						assert(!self_id.data.empty());
+
+						CRDTNotes::CRDTAgent self_agent_id;
+
+						// at most agent size, up to self id size
+						for (size_t i = 0; i < self_agent_id.size() && i < self_id.data.size(); i++) {
+							self_agent_id.at(i) = self_id.data.at(i);
+						}
 
 						_notes.addDoc(
 							// tox id (id from self)
-							{},
+							self_agent_id,
 							// random 32bytes?
 							{}
 						);
