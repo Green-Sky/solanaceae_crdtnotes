@@ -24,6 +24,7 @@ target_link_libraries(solanaceae_crdtnotes_imgui PUBLIC
 	#imgui_interface
 	imgui
 	#solanaceae_util
+	solanaceae_contact
 )
 
 ########################################

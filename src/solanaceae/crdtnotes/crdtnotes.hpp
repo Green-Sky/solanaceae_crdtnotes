@@ -28,14 +28,17 @@ struct std::hash<ID32> {
 };
 
 class CRDTNotes {
-	using CRDTAgent = ID32;
-	using DocID = ID32;
-	using Doc = GreenCRDT::V3::TextDocument<CRDTAgent>;
+	public:
+		using CRDTAgent = ID32;
+		using DocID = ID32;
+		using Doc = GreenCRDT::V3::TextDocument<CRDTAgent>;
 
-	// TODO: add metadata to docs
-	std::unordered_map<DocID, Doc> _docs;
+	private:
+		// TODO: add metadata to docs
+		std::unordered_map<DocID, Doc> _docs;
 
 	public:
+
 		// config?
 		CRDTNotes(void);
 		~CRDTNotes(void);

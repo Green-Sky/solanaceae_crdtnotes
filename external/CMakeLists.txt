@@ -52,6 +52,23 @@ if (NOT TARGET imgui)
 	#FetchContent_MakeAvailable(imgui)
 endif()
 
+# TODO: move entt dep into solanaceae_contact
+if (NOT TARGET EnTT::EnTT)
+	FetchContent_Declare(EnTT
+		GIT_REPOSITORY https://github.com/skypjack/entt.git
+		GIT_TAG v3.12.2
+	)
+	FetchContent_MakeAvailable(EnTT)
+endif()
+
+if (NOT TARGET solanaceae_contact)
+	FetchContent_Declare(solanaceae_contact
+		GIT_REPOSITORY https://github.com/Green-Sky/solanaceae_contact.git
+		GIT_TAG master
+	)
+	FetchContent_MakeAvailable(solanaceae_contact)
+endif()
+
 if (NOT TARGET solanaceae_plugin)
 	FetchContent_Declare(solanaceae_plugin
 		GIT_REPOSITORY https://github.com/Green-Sky/solanaceae_plugin.git
