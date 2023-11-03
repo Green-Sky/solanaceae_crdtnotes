@@ -1,6 +1,8 @@
 #include "./crdtnotes.hpp"
 
 CRDTNotes::CRDTNotes(void) {
+	_rng.seed(std::random_device{}());
+	_rng.discard(707);
 }
 
 CRDTNotes::~CRDTNotes(void) {
@@ -35,5 +37,15 @@ CRDTNotes::Doc* CRDTNotes::addDoc(const CRDTAgent& self_agent, const DocID& id) 
 	auto& doc = _docs[id];
 	doc.local_actor = self_agent;
 	return &doc;
+}
+
+CRDTNotes::Doc* CRDTNotes::addDoc(const CRDTAgent& self_agent) {
+	DocID new_id;
+	for (auto& it : new_id) {
+		// TODO: this discards alot
+		it = static_cast<uint8_t>(_rng());
+	}
+
+	return addDoc(self_agent, new_id);
 }
 

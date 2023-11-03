@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <functional>
 #include <unordered_map>
+#include <random>
 
 using ID32 = std::array<uint8_t, 32>;
 
@@ -36,6 +37,7 @@ class CRDTNotes {
 	private:
 		// TODO: add metadata to docs
 		std::unordered_map<DocID, Doc> _docs;
+		std::default_random_engine _rng;
 
 	public:
 
@@ -49,5 +51,8 @@ class CRDTNotes {
 		Doc* getDoc(const DocID& id);
 
 		Doc* addDoc(const CRDTAgent& self_agent, const DocID& doc);
+
+		// new doc with random id
+		Doc* addDoc(const CRDTAgent& self_agent);
 };
 

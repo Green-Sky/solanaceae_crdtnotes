@@ -39,7 +39,7 @@ namespace detail {
 	std::string to_hex(const Container& data) {
 		std::string res;
 		for (const uint8_t it : data) {
-			res += nib_to_hex(it << 4);
+			res += nib_to_hex(it >> 4);
 			res += nib_to_hex(it & 0x0f);
 		}
 		return res;
@@ -74,9 +74,7 @@ float CRDTNotesImGui::render(void) {
 
 						_notes.addDoc(
 							// tox id (id from self)
-							self_agent_id,
-							// random 32bytes?
-							{}
+							self_agent_id
 						);
 
 						// and open the doc
