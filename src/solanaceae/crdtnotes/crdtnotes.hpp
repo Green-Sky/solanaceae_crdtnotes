@@ -8,6 +8,9 @@
 #include <unordered_map>
 #include <random>
 
+// fwd
+struct CRDTNotesContactSyncModelI;
+
 using ID32 = std::array<uint8_t, 32>;
 
 template<>
@@ -33,6 +36,10 @@ class CRDTNotes {
 		using CRDTAgent = ID32;
 		using DocID = ID32;
 		using Doc = GreenCRDT::V3::TextDocument<CRDTAgent>;
+		struct Frontier { // newest known seq for given agent
+			CRDTAgent agent;
+			uint64_t seq{0};
+		};
 
 	private:
 		// TODO: add metadata to docs

@@ -22,3 +22,15 @@ target_link_libraries(plugin_crdtnotes_imgui PUBLIC
 
 ########################################
 
+if (TARGET solanaceae_crdtnotes_toxsync)
+	add_library(plugin_crdtnotes_toxsync SHARED
+		./plugin_crdtnotes_toxsync.cpp
+	)
+	target_compile_features(plugin_crdtnotes_toxsync PUBLIC cxx_std_17)
+	target_link_libraries(plugin_crdtnotes_toxsync PUBLIC
+		solanaceae_crdtnotes_toxsync
+		solanaceae_plugin
+	)
+endif()
+
+########################################
