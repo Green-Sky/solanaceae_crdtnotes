@@ -1,11 +1,13 @@
 #include <solanaceae/plugin/solana_plugin_v1.h>
 
 #include <solanaceae/crdtnotes/crdtnotes.hpp>
+#include <solanaceae/crdtnotes/crdtnotes_sync.hpp>
 #include <solanaceae/crdtnotes_toxsync/crdtnotes_toxsync.hpp>
 //#include <solanaceae/util/config_model.hpp>
 #include <solanaceae/contact/contact_model3.hpp>
 #include <solanaceae/toxcore/tox_interface.hpp>
 #include <solanaceae/toxcore/tox_event_interface.hpp>
+#include <solanaceae/tox_contacts/tox_contact_model2.hpp>
 
 #include <memory>
 #include <iostream>
@@ -34,16 +36,20 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 
 	//ConfigModelI* conf = nullptr;
 	CRDTNotes* notes = nullptr;
+	CRDTNotesEventI* notes_sync = nullptr;
 	Contact3Registry* cr = nullptr;
 	ToxI* t = nullptr;
 	ToxEventProviderI* tep = nullptr;
+	ToxContactModel2* tcm = nullptr;
 
 	{ // make sure required types are loaded
 		//conf = RESOLVE_INSTANCE(ConfigModelI);
 		notes = RESOLVE_INSTANCE(CRDTNotes);
+		notes_sync = RESOLVE_INSTANCE(CRDTNotesEventI);
 		cr = RESOLVE_INSTANCE(Contact3Registry);
 		t = RESOLVE_INSTANCE(ToxI);
 		tep = RESOLVE_INSTANCE(ToxEventProviderI);
+		tcm = RESOLVE_INSTANCE(ToxContactModel2);
 
 		//if (conf == nullptr) {
 			//std::cerr << "PLUGIN CRDTN missing ConfigModelI\n";
@@ -52,6 +58,11 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 
 		if (notes == nullptr) {
 			std::cerr << "PLUGIN CRDTNTS missing CRDTNotes\n";
+			return 2;
+		}
+
+		if (notes_sync == nullptr) {
+			std::cerr << "PLUGIN CRDTNTS missing CRDTNotesEventI\n";
 			return 2;
 		}
 
@@ -69,11 +80,16 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 			std::cerr << "PLUGIN CRDTNTS missing ToxEventProviderI\n";
 			return 2;
 		}
+
+		if (tcm == nullptr) {
+			std::cerr << "PLUGIN CRDTNTS missing ToxContactModel2\n";
+			return 2;
+		}
 	}
 
 	// static store, could be anywhere tho
 	// construct with fetched dependencies
-	g_crdtn_ts = std::make_unique<CRDTNotesToxSync>(*notes, *cr, *t, *tep);
+	g_crdtn_ts = std::make_unique<CRDTNotesToxSync>(*notes, *notes_sync, *cr, *t, *tep, *tcm);
 
 	// register types
 	PROVIDE_INSTANCE(CRDTNotesToxSync, "CRDTNotesToxSync", g_crdtn_ts.get());

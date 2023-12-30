@@ -4,6 +4,8 @@ add_library(solanaceae_crdtnotes
 	./solanaceae/crdtnotes/crdtnotes.hpp
 	./solanaceae/crdtnotes/crdtnotes.cpp
 	./solanaceae/crdtnotes/crdtnotes_contact_sync_model.hpp
+	./solanaceae/crdtnotes/crdtnotes_sync.hpp
+	./solanaceae/crdtnotes/crdtnotes_sync.cpp
 )
 target_include_directories(solanaceae_crdtnotes PUBLIC .)
 target_compile_features(solanaceae_crdtnotes PUBLIC cxx_std_17)

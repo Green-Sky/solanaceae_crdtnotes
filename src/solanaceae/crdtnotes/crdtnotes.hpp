@@ -47,7 +47,6 @@ class CRDTNotes {
 		std::default_random_engine _rng;
 
 	public:
-
 		// config?
 		CRDTNotes(void);
 		~CRDTNotes(void);

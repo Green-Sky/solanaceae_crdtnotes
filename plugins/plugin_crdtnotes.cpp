@@ -1,6 +1,7 @@
 #include <solanaceae/plugin/solana_plugin_v1.h>
 
 #include <solanaceae/crdtnotes/crdtnotes.hpp>
+#include <solanaceae/crdtnotes/crdtnotes_sync.hpp>
 //#include <solanaceae/util/config_model.hpp>
 
 #include <memory>
@@ -10,6 +11,7 @@
 #define PROVIDE_INSTANCE(x, p, v) solana_api->provideInstance(#x, p, static_cast<x*>(v))
 
 static std::unique_ptr<CRDTNotes> g_crdtn = nullptr;
+static std::unique_ptr<CRDTNotesSync> g_crdtns = nullptr;
 
 extern "C" {
 
@@ -42,9 +44,13 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 	// static store, could be anywhere tho
 	// construct with fetched dependencies
 	g_crdtn = std::make_unique<CRDTNotes>(/**conf*/);
+	g_crdtns = std::make_unique<CRDTNotesSync>(/**conf*/);
 
 	// register types
 	PROVIDE_INSTANCE(CRDTNotes, "CRDTNotes", g_crdtn.get());
+
+	PROVIDE_INSTANCE(CRDTNotesSync, "CRDTNotes", g_crdtns.get());
+	PROVIDE_INSTANCE(CRDTNotesEventI, "CRDTNotes", g_crdtns.get());
 
 	return 0;
 }
