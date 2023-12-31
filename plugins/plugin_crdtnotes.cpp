@@ -31,24 +31,29 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 	}
 
 	//ConfigModelI* conf = nullptr;
+	Contact3Registry* cr = nullptr;
 
 	{ // make sure required types are loaded
 		//conf = RESOLVE_INSTANCE(ConfigModelI);
+		cr = RESOLVE_INSTANCE(Contact3Registry);
 
 		//if (conf == nullptr) {
 			//std::cerr << "PLUGIN CRDTN missing ConfigModelI\n";
 			//return 2;
 		//}
+
+		if (cr == nullptr) {
+			std::cerr << "PLUGIN CRDTNTS missing Contact3Registry\n";
+			return 2;
+		}
 	}
 
 	// static store, could be anywhere tho
 	// construct with fetched dependencies
-	g_crdtn = std::make_unique<CRDTNotes>(/**conf*/);
-	g_crdtns = std::make_unique<CRDTNotesSync>(/**conf*/);
+	g_crdtn = std::make_unique<CRDTNotes>();
+	g_crdtns = std::make_unique<CRDTNotesSync>(*g_crdtn, *cr);
 
 	// register types
-	PROVIDE_INSTANCE(CRDTNotes, "CRDTNotes", g_crdtn.get());
-
 	PROVIDE_INSTANCE(CRDTNotesSync, "CRDTNotes", g_crdtns.get());
 	PROVIDE_INSTANCE(CRDTNotesEventI, "CRDTNotes", g_crdtns.get());
 
@@ -59,12 +64,13 @@ SOLANA_PLUGIN_EXPORT void solana_plugin_stop(void) {
 	std::cout << "PLUGIN CRDTN STOP()\n";
 
 	g_crdtn.reset();
+	g_crdtns.reset();
 }
 
 SOLANA_PLUGIN_EXPORT void solana_plugin_tick(float delta) {
 	(void)delta;
 	//std::cout << "PLUGIN CRDTN TICK()\n";
-	//g_crdtn->iterate();
+	g_crdtns->iterate(delta);
 }
 
 } // extern C

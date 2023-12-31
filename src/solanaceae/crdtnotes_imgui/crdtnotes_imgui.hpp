@@ -1,12 +1,12 @@
 #pragma once
 
-#include <solanaceae/crdtnotes/crdtnotes.hpp>
+#include <solanaceae/crdtnotes/crdtnotes_sync.hpp>
 #include <solanaceae/contact/contact_model3.hpp>
 
 #include <set>
 
 class CRDTNotesImGui {
-	CRDTNotes& _notes;
+	CRDTNotesSync& _notes_sync;
 	Contact3Registry& _cr;
 
 	bool _show_global_list {true};
@@ -14,7 +14,7 @@ class CRDTNotesImGui {
 	std::set<CRDTNotes::DocID> _open_docs;
 
 	public:
-		CRDTNotesImGui(CRDTNotes& notes, Contact3Registry& cr);
+		CRDTNotesImGui(CRDTNotesSync& notes_sync, Contact3Registry& cr);
 
 		float render(void);
 

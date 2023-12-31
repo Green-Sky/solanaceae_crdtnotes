@@ -13,7 +13,6 @@ struct ToxEventProviderI;
 
 // implements CRDTNotesContactSyncModelI and attaches itself to tox contacts
 class CRDTNotesToxSync : public CRDTNotesContactSyncModelI, public ToxEventI {
-	CRDTNotes& _notes;
 	CRDTNotesEventI& _notes_sync;
 	Contact3Registry& _cr;
 	ToxI& _t;
@@ -22,7 +21,6 @@ class CRDTNotesToxSync : public CRDTNotesContactSyncModelI, public ToxEventI {
 
 	public:
 		CRDTNotesToxSync(
-			CRDTNotes& notes,
 			CRDTNotesEventI& notes_sync,
 			Contact3Registry& cr,
 			ToxI& t,

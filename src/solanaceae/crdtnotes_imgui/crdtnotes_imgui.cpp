@@ -47,7 +47,7 @@ namespace detail {
 } // detail
 
 
-CRDTNotesImGui::CRDTNotesImGui(CRDTNotes& notes, Contact3Registry& cr) : _notes(notes), _cr(cr) {
+CRDTNotesImGui::CRDTNotesImGui(CRDTNotesSync& notes_sync, Contact3Registry& cr) : _notes_sync(notes_sync), _cr(cr) {
 }
 
 float CRDTNotesImGui::render(void) {
@@ -60,24 +60,25 @@ float CRDTNotesImGui::render(void) {
 			if (ImGui::BeginPopup("create new doc contact")) {
 				for (const auto& c : _cr.view<Contact::Components::TagBig>()) {
 					if (renderContactListContactSmall(c, false)) {
-						const auto& self = _cr.get<Contact::Components::Self>(c).self;
-						assert(_cr.all_of<Contact::Components::ID>(self));
-						const auto& self_id = _cr.get<Contact::Components::ID>(self);
-						assert(!self_id.data.empty());
+						//const auto& self = _cr.get<Contact::Components::Self>(c).self;
+						//assert(_cr.all_of<Contact::Components::ID>(self));
+						//const auto& self_id = _cr.get<Contact::Components::ID>(self);
+						//assert(!self_id.data.empty());
 
-						CRDTNotes::CRDTAgent self_agent_id;
+						//CRDTNotes::CRDTAgent self_agent_id;
 
-						// at most agent size, up to self id size
-						for (size_t i = 0; i < self_agent_id.size() && i < self_id.data.size(); i++) {
-							self_agent_id.at(i) = self_id.data.at(i);
-						}
+						//// at most agent size, up to self id size
+						//for (size_t i = 0; i < self_agent_id.size() && i < self_id.data.size(); i++) {
+							//self_agent_id.at(i) = self_id.data.at(i);
+						//}
 
-						_notes.addDoc(
-							// tox id (id from self)
-							self_agent_id
-						);
+						//_notes.addDoc(
+							//// tox id (id from self)
+							//self_agent_id
+						//);
+						_notes_sync.addNewDoc({_cr, c}, false);
 
-						// and open the doc
+						//// and open the doc
 					}
 				}
 				ImGui::EndPopup();
@@ -85,7 +86,7 @@ float CRDTNotesImGui::render(void) {
 
 
 			ImGui::SeparatorText("Global list");
-			const auto doclist = _notes.getDocList();
+			const auto doclist = _notes_sync.getDocList();
 			for (const auto& docid : doclist) {
 				const auto docid_str = detail::to_hex(docid);
 				//ImGui::TextUnformatted(docid_str.c_str());
@@ -132,16 +133,14 @@ bool CRDTNotesImGui::renderContactListContactSmall(const Contact3 c, const bool 
 }
 
 bool CRDTNotesImGui::renderDoc(const CRDTNotes::DocID& doc_id) {
-	auto* doc = _notes.getDoc(doc_id);
+	auto* doc = _notes_sync.getDoc(doc_id);
 	if (doc == nullptr) {
 		return false;
 	}
 
 	auto text = doc->getText();
 	if (renderDocText(text)) {
-		auto op_vec = doc->merge(text);
-		std::cout << "doc changed " << op_vec.size() << " ops generated\n";
-		// ... uh?
+		_notes_sync.merge(doc_id, text);
 		return true;
 	}
 

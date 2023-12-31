@@ -38,13 +38,12 @@ enum class NGCEXT_Event : uint8_t {
 #define _DATA_HAVE(x, error) if ((data_size - curser) < (x)) { error }
 
 CRDTNotesToxSync::CRDTNotesToxSync(
-	CRDTNotes& notes,
 	CRDTNotesEventI& notes_sync,
 	Contact3Registry& cr,
 	ToxI& t,
 	ToxEventProviderI& tep,
 	ToxContactModel2& tcm
-) : _notes(notes), _notes_sync(notes_sync), _cr(cr), _t(t), _tep(tep), _tcm(tcm) {
+) : _notes_sync(notes_sync), _cr(cr), _t(t), _tep(tep), _tcm(tcm) {
 	// TODO: non groups
 
 	// should be called for every peer (except self)

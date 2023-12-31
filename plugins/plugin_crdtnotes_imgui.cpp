@@ -30,13 +30,13 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 	}
 
 	//ConfigModelI* conf = nullptr;
-	CRDTNotes* crdtn = nullptr;
+	CRDTNotesSync* crdtns = nullptr;
 	Contact3Registry* cr = nullptr;
 	ImGuiContext* imguic = nullptr;
 
 	{ // make sure required types are loaded
 		//conf = RESOLVE_INSTANCE(ConfigModelI);
-		crdtn = RESOLVE_INSTANCE(CRDTNotes);
+		crdtns = RESOLVE_INSTANCE(CRDTNotesSync);
 		cr = RESOLVE_INSTANCE(Contact3Registry);
 		imguic = RESOLVE_INSTANCE(ImGuiContext);
 
@@ -45,8 +45,8 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 			//return 2;
 		//}
 
-		if (crdtn == nullptr) {
-			std::cerr << "PLUGIN CRDTNIMGUI missing CRDTNotes\n";
+		if (crdtns == nullptr) {
+			std::cerr << "PLUGIN CRDTNIMGUI missing CRDTNotesSync\n";
 			return 2;
 		}
 
@@ -65,7 +65,7 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 
 	// static store, could be anywhere tho
 	// construct with fetched dependencies
-	g_crdtn_imgui = std::make_unique<CRDTNotesImGui>(*crdtn, *cr);
+	g_crdtn_imgui = std::make_unique<CRDTNotesImGui>(*crdtns, *cr);
 
 	// register types
 	PROVIDE_INSTANCE(CRDTNotesImGui, "CRDTNotesImGui", g_crdtn_imgui.get());
