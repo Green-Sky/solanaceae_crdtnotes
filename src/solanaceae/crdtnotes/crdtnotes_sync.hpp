@@ -82,6 +82,10 @@ class CRDTNotesSync final : public CRDTNotesEventI {
 
 	std::unordered_map<CRDTNotes::DocID, std::set<Contact3Handle>> _docs_contacts;
 
+	// if a doc is eg new, it is added here
+	std::set<CRDTNotes::DocID> _gossip_queue;
+	std::set<CRDTNotes::DocID> _fetch_frontier_queue;
+
 	public:
 		CRDTNotesSync(CRDTNotes& notes, Contact3Registry& cr);
 
