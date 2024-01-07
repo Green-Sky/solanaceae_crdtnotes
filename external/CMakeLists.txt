@@ -14,6 +14,7 @@ if (NOT TARGET imgui)
 	FetchContent_Declare(imgui
 		GIT_REPOSITORY https://github.com/ocornut/imgui.git
 		GIT_TAG d4ddc46e7
+		EXCLUDE_FROM_ALL
 	)
 
 	# imgui does not provide a cmake
@@ -48,6 +49,7 @@ if (NOT TARGET imgui)
 			${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
 		)
 		target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR})
+		target_compile_features(imgui PUBLIC cxx_std_11)
 	endif()
 	#FetchContent_MakeAvailable(imgui)
 endif()
