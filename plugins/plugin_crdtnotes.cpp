@@ -67,10 +67,8 @@ SOLANA_PLUGIN_EXPORT void solana_plugin_stop(void) {
 	g_crdtns.reset();
 }
 
-SOLANA_PLUGIN_EXPORT void solana_plugin_tick(float delta) {
-	(void)delta;
-	//std::cout << "PLUGIN CRDTN TICK()\n";
-	g_crdtns->iterate(delta);
+SOLANA_PLUGIN_EXPORT float solana_plugin_tick(float delta) {
+	return g_crdtns->iterate(delta);
 }
 
 } // extern C
