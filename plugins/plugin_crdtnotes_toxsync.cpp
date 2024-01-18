@@ -3,7 +3,6 @@
 #include <solanaceae/crdtnotes/crdtnotes.hpp>
 #include <solanaceae/crdtnotes/crdtnotes_sync.hpp>
 #include <solanaceae/crdtnotes_toxsync/crdtnotes_toxsync.hpp>
-//#include <solanaceae/util/config_model.hpp>
 #include <solanaceae/contact/contact_model3.hpp>
 #include <solanaceae/toxcore/tox_interface.hpp>
 #include <solanaceae/toxcore/tox_event_interface.hpp>
@@ -12,15 +11,14 @@
 #include <memory>
 #include <iostream>
 
-#define RESOLVE_INSTANCE(x) static_cast<x*>(solana_api->resolveInstance(#x))
-#define PROVIDE_INSTANCE(x, p, v) solana_api->provideInstance(#x, p, static_cast<x*>(v))
-
 static std::unique_ptr<CRDTNotesToxSync> g_crdtn_ts = nullptr;
+
+constexpr const char* plugin_name = "CRDTNotesToxSync";
 
 extern "C" {
 
 SOLANA_PLUGIN_EXPORT const char* solana_plugin_get_name(void) {
-	return "CRDTNotesToxSync";
+	return plugin_name;
 }
 
 SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_get_version(void) {
@@ -28,70 +26,35 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_get_version(void) {
 }
 
 SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) {
-	std::cout << "PLUGIN CRDTNTS START()\n";
+	std::cout << "PLUGIN " << plugin_name << " START()\n";
 
 	if (solana_api == nullptr) {
 		return 1;
 	}
 
-	//ConfigModelI* conf = nullptr;
-	CRDTNotesEventI* notes_sync = nullptr;
-	Contact3Registry* cr = nullptr;
-	ToxI* t = nullptr;
-	ToxEventProviderI* tep = nullptr;
-	ToxContactModel2* tcm = nullptr;
+	try {
+		auto* notes_sync = PLUG_RESOLVE_INSTANCE(CRDTNotesEventI);
+		auto* cr = PLUG_RESOLVE_INSTANCE_VERSIONED(Contact3Registry, "1");
+		auto* t = PLUG_RESOLVE_INSTANCE(ToxI);
+		auto* tep = PLUG_RESOLVE_INSTANCE(ToxEventProviderI);
+		auto* tcm = PLUG_RESOLVE_INSTANCE(ToxContactModel2);
 
-	{ // make sure required types are loaded
-		//conf = RESOLVE_INSTANCE(ConfigModelI);
-		notes_sync = RESOLVE_INSTANCE(CRDTNotesEventI);
-		cr = RESOLVE_INSTANCE(Contact3Registry);
-		t = RESOLVE_INSTANCE(ToxI);
-		tep = RESOLVE_INSTANCE(ToxEventProviderI);
-		tcm = RESOLVE_INSTANCE(ToxContactModel2);
+		// static store, could be anywhere tho
+		// construct with fetched dependencies
+		g_crdtn_ts = std::make_unique<CRDTNotesToxSync>(*notes_sync, *cr, *t, *tep, *tcm);
 
-		//if (conf == nullptr) {
-			//std::cerr << "PLUGIN CRDTN missing ConfigModelI\n";
-			//return 2;
-		//}
-
-		if (notes_sync == nullptr) {
-			std::cerr << "PLUGIN CRDTNTS missing CRDTNotesEventI\n";
-			return 2;
-		}
-
-		if (cr == nullptr) {
-			std::cerr << "PLUGIN CRDTNTS missing Contact3Registry\n";
-			return 2;
-		}
-
-		if (t == nullptr) {
-			std::cerr << "PLUGIN CRDTNTS missing ToxI\n";
-			return 2;
-		}
-
-		if (tep == nullptr) {
-			std::cerr << "PLUGIN CRDTNTS missing ToxEventProviderI\n";
-			return 2;
-		}
-
-		if (tcm == nullptr) {
-			std::cerr << "PLUGIN CRDTNTS missing ToxContactModel2\n";
-			return 2;
-		}
+		// register types
+		PLUG_PROVIDE_INSTANCE(CRDTNotesToxSync, plugin_name, g_crdtn_ts.get());
+	} catch (const ResolveException& e) {
+		std::cerr << "PLUGIN " << plugin_name << " " << e.what << "\n";
+		return 2;
 	}
-
-	// static store, could be anywhere tho
-	// construct with fetched dependencies
-	g_crdtn_ts = std::make_unique<CRDTNotesToxSync>(*notes_sync, *cr, *t, *tep, *tcm);
-
-	// register types
-	PROVIDE_INSTANCE(CRDTNotesToxSync, "CRDTNotesToxSync", g_crdtn_ts.get());
 
 	return 0;
 }
 
 SOLANA_PLUGIN_EXPORT void solana_plugin_stop(void) {
-	std::cout << "PLUGIN CRDTNTS STOP()\n";
+	std::cout << "PLUGIN " << plugin_name << " STOP()\n";
 
 	g_crdtn_ts.reset();
 }

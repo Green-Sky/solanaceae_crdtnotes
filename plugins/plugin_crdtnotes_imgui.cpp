@@ -1,22 +1,20 @@
 #include <solanaceae/plugin/solana_plugin_v1.h>
 
 #include <solanaceae/crdtnotes_imgui/crdtnotes_imgui.hpp>
-//#include <solanaceae/util/config_model.hpp>
 #include <imgui.h>
 
 #include <memory>
 #include <limits>
 #include <iostream>
 
-#define RESOLVE_INSTANCE(x) static_cast<x*>(solana_api->resolveInstance(#x))
-#define PROVIDE_INSTANCE(x, p, v) solana_api->provideInstance(#x, p, static_cast<x*>(v))
-
 static std::unique_ptr<CRDTNotesImGui> g_crdtn_imgui = nullptr;
+
+constexpr const char* plugin_name = "CRDTNotesImGui";
 
 extern "C" {
 
 SOLANA_PLUGIN_EXPORT const char* solana_plugin_get_name(void) {
-	return "CRDTNIMGUIotesImGui";
+	return plugin_name;
 }
 
 SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_get_version(void) {
@@ -24,58 +22,35 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_get_version(void) {
 }
 
 SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) {
-	std::cout << "PLUGIN CRDTNIMGUI START()\n";
+	std::cout << "PLUGIN " << plugin_name << " START()\n";
 
 	if (solana_api == nullptr) {
 		return 1;
 	}
 
-	//ConfigModelI* conf = nullptr;
-	CRDTNotesSync* crdtns = nullptr;
-	Contact3Registry* cr = nullptr;
-	ImGuiContext* imguic = nullptr;
+	try {
+		auto* crdtns = PLUG_RESOLVE_INSTANCE(CRDTNotesSync);
+		auto* cr = PLUG_RESOLVE_INSTANCE_VERSIONED(Contact3Registry, "1");
+		auto* imguic = PLUG_RESOLVE_INSTANCE_VERSIONED(ImGuiContext, ImGui::GetVersion());
 
-	{ // make sure required types are loaded
-		//conf = RESOLVE_INSTANCE(ConfigModelI);
-		crdtns = RESOLVE_INSTANCE(CRDTNotesSync);
-		cr = RESOLVE_INSTANCE(Contact3Registry);
-		imguic = RESOLVE_INSTANCE(ImGuiContext);
+		ImGui::SetCurrentContext(imguic);
 
-		//if (conf == nullptr) {
-			//std::cerr << "PLUGIN CRDTNIMGUI missing ConfigModelI\n";
-			//return 2;
-		//}
+		// static store, could be anywhere tho
+		// construct with fetched dependencies
+		g_crdtn_imgui = std::make_unique<CRDTNotesImGui>(*crdtns, *cr);
 
-		if (crdtns == nullptr) {
-			std::cerr << "PLUGIN CRDTNIMGUI missing CRDTNotesSync\n";
-			return 2;
-		}
-
-		if (cr == nullptr) {
-			std::cerr << "PLUGIN CRDTNIMGUI missing Contact3Registry\n";
-			return 2;
-		}
-
-		if (imguic == nullptr) {
-			std::cerr << "PLUGIN CRDTNIMGUI missing ImGuiContext\n";
-			return 2;
-		}
+		// register types
+		PLUG_PROVIDE_INSTANCE(CRDTNotesImGui, plugin_name, g_crdtn_imgui.get());
+	} catch (const ResolveException& e) {
+		std::cerr << "PLUGIN " << plugin_name << " " << e.what << "\n";
+		return 2;
 	}
-
-	ImGui::SetCurrentContext(imguic);
-
-	// static store, could be anywhere tho
-	// construct with fetched dependencies
-	g_crdtn_imgui = std::make_unique<CRDTNotesImGui>(*crdtns, *cr);
-
-	// register types
-	PROVIDE_INSTANCE(CRDTNotesImGui, "CRDTNotesImGui", g_crdtn_imgui.get());
 
 	return 0;
 }
 
 SOLANA_PLUGIN_EXPORT void solana_plugin_stop(void) {
-	std::cout << "PLUGIN CRDTNIMGUI STOP()\n";
+	std::cout << "PLUGIN " << plugin_name << " STOP()\n";
 
 	g_crdtn_imgui.reset();
 }
