@@ -13,7 +13,7 @@ endif()
 if (NOT TARGET imgui)
 	FetchContent_Declare(imgui
 		GIT_REPOSITORY https://github.com/ocornut/imgui.git
-		GIT_TAG d6cb3c9 # v1.90.1
+		GIT_TAG 6ccc561 # v1.90.6
 		EXCLUDE_FROM_ALL
 	)
 
@@ -52,15 +52,6 @@ if (NOT TARGET imgui)
 		target_compile_features(imgui PUBLIC cxx_std_11)
 	endif()
 	#FetchContent_MakeAvailable(imgui)
-endif()
-
-# TODO: move entt dep into solanaceae_contact
-if (NOT TARGET EnTT::EnTT)
-	FetchContent_Declare(EnTT
-		GIT_REPOSITORY https://github.com/skypjack/entt.git
-		GIT_TAG v3.12.2
-	)
-	FetchContent_MakeAvailable(EnTT)
 endif()
 
 if (NOT TARGET solanaceae_contact)

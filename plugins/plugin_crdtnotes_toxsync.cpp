@@ -8,6 +8,9 @@
 #include <solanaceae/toxcore/tox_event_interface.hpp>
 #include <solanaceae/tox_contacts/tox_contact_model2.hpp>
 
+#include <entt/entt.hpp>
+#include <entt/fwd.hpp>
+
 #include <memory>
 #include <iostream>
 

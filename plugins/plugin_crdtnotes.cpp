@@ -3,6 +3,9 @@
 #include <solanaceae/crdtnotes/crdtnotes.hpp>
 #include <solanaceae/crdtnotes/crdtnotes_sync.hpp>
 
+#include <entt/entt.hpp>
+#include <entt/fwd.hpp>
+
 #include <memory>
 #include <iostream>
 

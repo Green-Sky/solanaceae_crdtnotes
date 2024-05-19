@@ -3,6 +3,9 @@
 #include <solanaceae/crdtnotes_imgui/crdtnotes_imgui.hpp>
 #include <imgui.h>
 
+#include <entt/entt.hpp>
+#include <entt/fwd.hpp>
+
 #include <memory>
 #include <limits>
 #include <iostream>
