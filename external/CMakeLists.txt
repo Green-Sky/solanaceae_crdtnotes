@@ -13,7 +13,7 @@ endif()
 if (NOT TARGET imgui)
 	FetchContent_Declare(imgui
 		GIT_REPOSITORY https://github.com/ocornut/imgui.git
-		GIT_TAG 00ad3c6 # v1.90.7
+		GIT_TAG 8199457 # v1.91.0
 		EXCLUDE_FROM_ALL
 	)
 
