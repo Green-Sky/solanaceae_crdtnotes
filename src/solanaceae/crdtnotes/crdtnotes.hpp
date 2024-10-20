@@ -15,14 +15,14 @@ struct std::hash<ID32> {
 		//static_assert(sizeof(size_t) == 8);
 		// TODO: maybe shuffle the indices a bit
 		return
-			(static_cast<size_t>(s[0]) << 8*0) |
-			(static_cast<size_t>(s[1]) << 8*1) |
-			(static_cast<size_t>(s[2]) << 8*2) |
-			(static_cast<size_t>(s[3]) << 8*3) |
-			(static_cast<size_t>(s[4]) << 8*4) |
-			(static_cast<size_t>(s[5]) << 8*5) |
-			(static_cast<size_t>(s[6]) << 8*6) |
-			(static_cast<size_t>(s[7]) << 8*7)
+			(static_cast<std::uint64_t>(s[0]) << 8*0) |
+			(static_cast<std::uint64_t>(s[1]) << 8*1) |
+			(static_cast<std::uint64_t>(s[2]) << 8*2) |
+			(static_cast<std::uint64_t>(s[3]) << 8*3) |
+			(static_cast<std::uint64_t>(s[4]) << 8*4) |
+			(static_cast<std::uint64_t>(s[5]) << 8*5) |
+			(static_cast<std::uint64_t>(s[6]) << 8*6) |
+			(static_cast<std::uint64_t>(s[7]) << 8*7)
 		;
 	}
 };
