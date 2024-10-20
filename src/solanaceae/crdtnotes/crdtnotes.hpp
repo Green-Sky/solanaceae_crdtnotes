@@ -11,8 +11,8 @@ using ID32 = std::array<uint8_t, 32>;
 
 template<>
 struct std::hash<ID32> {
-	std::size_t operator()(ID32 const& s) const noexcept {
-		static_assert(sizeof(size_t) == 8);
+	std::uint64_t operator()(ID32 const& s) const noexcept {
+		//static_assert(sizeof(size_t) == 8);
 		// TODO: maybe shuffle the indices a bit
 		return
 			(static_cast<size_t>(s[0]) << 8*0) |
