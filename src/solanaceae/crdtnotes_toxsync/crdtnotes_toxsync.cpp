@@ -43,15 +43,17 @@ CRDTNotesToxSync::CRDTNotesToxSync(
 	ToxI& t,
 	ToxEventProviderI& tep,
 	ToxContactModel2& tcm
-) : _notes_sync(notes_sync), _cr(cr), _t(t), _tep(tep), _tcm(tcm) {
+) : _notes_sync(notes_sync), _cr(cr), _t(t), _tep_sr(tep.newSubRef(this)), _tcm(tcm) {
 	// TODO: non groups
 
 	// should be called for every peer (except self)
 	// we hook here to inject ourself as contact sync model
-	_tep.subscribe(this, Tox_Event_Type::TOX_EVENT_GROUP_PEER_JOIN);
+	_tep_sr
+		.subscribe(Tox_Event_Type::TOX_EVENT_GROUP_PEER_JOIN)
 
-	_tep.subscribe(this, Tox_Event_Type::TOX_EVENT_GROUP_CUSTOM_PACKET);
-	_tep.subscribe(this, Tox_Event_Type::TOX_EVENT_GROUP_CUSTOM_PRIVATE_PACKET);
+		.subscribe(Tox_Event_Type::TOX_EVENT_GROUP_CUSTOM_PACKET)
+		.subscribe(Tox_Event_Type::TOX_EVENT_GROUP_CUSTOM_PRIVATE_PACKET)
+	;
 }
 
 CRDTNotesToxSync::~CRDTNotesToxSync(void) {

@@ -16,7 +16,7 @@ class CRDTNotesToxSync : public CRDTNotesContactSyncModelI, public ToxEventI {
 	CRDTNotesEventI& _notes_sync;
 	Contact3Registry& _cr;
 	ToxI& _t;
-	ToxEventProviderI& _tep;
+	ToxEventProviderI::SubscriptionReference _tep_sr;
 	ToxContactModel2& _tcm;
 
 	public:
