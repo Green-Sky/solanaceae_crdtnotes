@@ -15,6 +15,7 @@ if (NOT TARGET imgui)
 		GIT_REPOSITORY https://github.com/ocornut/imgui.git
 		GIT_TAG cb16568 # v1.91.3
 		EXCLUDE_FROM_ALL
+		CONFIGURE_COMMAND "" # remove?
 	)
 
 	# imgui does not provide a cmake
@@ -30,7 +31,7 @@ if (NOT TARGET imgui)
 	#endif()
 	FetchContent_GetProperties(imgui)
 	if(NOT imgui_POPULATED)
-		FetchContent_Populate(imgui)
+		FetchContent_MakeAvailable(imgui)
 
 		add_library(imgui STATIC
 			${imgui_SOURCE_DIR}/imgui.h
@@ -52,7 +53,6 @@ if (NOT TARGET imgui)
 		target_compile_features(imgui PUBLIC cxx_std_11)
 		target_compile_definitions(imgui PUBLIC IMGUI_USE_WCHAR32)
 	endif()
-	#FetchContent_MakeAvailable(imgui)
 endif()
 
 if (NOT TARGET solanaceae_contact)
