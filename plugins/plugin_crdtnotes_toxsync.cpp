@@ -3,7 +3,6 @@
 #include <solanaceae/crdtnotes/crdtnotes.hpp>
 #include <solanaceae/crdtnotes/crdtnotes_sync.hpp>
 #include <solanaceae/crdtnotes_toxsync/crdtnotes_toxsync.hpp>
-#include <solanaceae/contact/contact_model3.hpp>
 #include <solanaceae/toxcore/tox_interface.hpp>
 #include <solanaceae/toxcore/tox_event_interface.hpp>
 #include <solanaceae/tox_contacts/tox_contact_model2.hpp>
@@ -37,14 +36,14 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 
 	try {
 		auto* notes_sync = PLUG_RESOLVE_INSTANCE(CRDTNotesEventI);
-		auto* cr = PLUG_RESOLVE_INSTANCE_VERSIONED(Contact3Registry, "1");
+		auto* cs = PLUG_RESOLVE_INSTANCE(ContactStore4I);
 		auto* t = PLUG_RESOLVE_INSTANCE(ToxI);
 		auto* tep = PLUG_RESOLVE_INSTANCE(ToxEventProviderI);
 		auto* tcm = PLUG_RESOLVE_INSTANCE(ToxContactModel2);
 
 		// static store, could be anywhere tho
 		// construct with fetched dependencies
-		g_crdtn_ts = std::make_unique<CRDTNotesToxSync>(*notes_sync, *cr, *t, *tep, *tcm);
+		g_crdtn_ts = std::make_unique<CRDTNotesToxSync>(*notes_sync, *cs, *t, *tep, *tcm);
 
 		// register types
 		PLUG_PROVIDE_INSTANCE(CRDTNotesToxSync, plugin_name, g_crdtn_ts.get());

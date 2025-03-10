@@ -2,7 +2,7 @@
 
 #include "./crdtnotes.hpp"
 
-#include <solanaceae/contact/contact_model3.hpp>
+#include <solanaceae/contact/fwd.hpp>
 
 // send api
 struct CRDTNotesContactSyncModelI {
@@ -12,12 +12,12 @@ struct CRDTNotesContactSyncModelI {
 	public:
 		// notify of doc existing
 		virtual void SendGossip(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id
 		) = 0;
 
 		virtual void SendGossip(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id,
 			const std::vector<CRDTNotes::Frontier>& selected_frontier
 		) = 0;
@@ -26,13 +26,13 @@ struct CRDTNotesContactSyncModelI {
 	public:
 		// causes the other peer to send gossip with all known frontiers (on cool down)
 		virtual void SendFetchCompleteFrontier(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id
 		) = 0;
 
 		// action range request
 		virtual void SendFetchOps(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id,
 			const CRDTNotes::CRDTAgent& agent,
 			const uint64_t seq_from,
@@ -41,7 +41,7 @@ struct CRDTNotesContactSyncModelI {
 
 	public: // ops response
 		virtual void SendOps(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id,
 			// TODO: optimize this
 			const std::vector<CRDTNotes::Doc::Op>&

@@ -1,5 +1,6 @@
 #include "./crdtnotes_sync.hpp"
 
+#include <solanaceae/contact/contact_store_i.hpp>
 #include <solanaceae/crdtnotes/crdtnotes_contact_sync_model.hpp>
 
 #include <solanaceae/contact/components.hpp>
@@ -17,7 +18,7 @@ static ID32 id_from_vec(const std::vector<uint8_t>& vec) {
 	return new_id;
 }
 
-CRDTNotesSync::CRDTNotesSync(CRDTNotes& notes, Contact3Registry& cr) : _notes(notes), _cr(cr)  {
+CRDTNotesSync::CRDTNotesSync(CRDTNotes& notes, ContactStore4I& cs) : _notes(notes), _cs(cs)  {
 	_rng.seed(std::random_device{}());
 	_rng.discard(707);
 }
@@ -87,15 +88,17 @@ CRDTNotes::Doc* CRDTNotesSync::getDoc(const CRDTNotes::DocID& doc_id) {
 	return _notes.getDoc(doc_id);
 }
 
-std::optional<CRDTNotes::DocID> CRDTNotesSync::addNewDoc(Contact3Handle c, bool secret) {
+std::optional<CRDTNotes::DocID> CRDTNotesSync::addNewDoc(ContactHandle4 c, bool secret) {
 	if (!static_cast<bool>(c)) {
 		std::cerr << "CRDTNS error: invalid contact\n";
 		return std::nullopt;
 	}
 
-	const auto& self = c.get<Contact::Components::Self>().self;
-	assert(_cr.all_of<Contact::Components::ID>(self));
-	const auto& self_id = _cr.get<Contact::Components::ID>(self);
+	const auto& cr = _cs.registry();
+
+	const auto self = c.get<Contact::Components::Self>().self;
+	assert(cr.all_of<Contact::Components::ID>(self));
+	const auto& self_id = cr.get<Contact::Components::ID>(self);
 	assert(!self_id.data.empty());
 
 	CRDTNotes::CRDTAgent self_agent_id = id_from_vec(self_id.data);
@@ -127,15 +130,17 @@ std::optional<CRDTNotes::DocID> CRDTNotesSync::addNewDoc(Contact3Handle c, bool 
 	return new_id;
 }
 
-bool CRDTNotesSync::addDoc(const CRDTNotes::DocID& doc_id, Contact3Handle c) {
+bool CRDTNotesSync::addDoc(const CRDTNotes::DocID& doc_id, ContactHandle4 c) {
 	if (!static_cast<bool>(c)) {
 		std::cerr << "CRDTNS error: invalid contact\n";
 		return false;
 	}
 
+	const auto& cr = _cs.registry();
+
 	const auto& self = c.get<Contact::Components::Self>().self;
-	assert(_cr.all_of<Contact::Components::ID>(self));
-	const auto& self_id = _cr.get<Contact::Components::ID>(self);
+	assert(cr.all_of<Contact::Components::ID>(self));
+	const auto& self_id = cr.get<Contact::Components::ID>(self);
 	assert(!self_id.data.empty());
 
 	CRDTNotes::CRDTAgent self_agent_id = id_from_vec(self_id.data);
@@ -158,12 +163,12 @@ std::vector<CRDTNotes::DocID> CRDTNotesSync::getDocList(void) {
 	return _notes.getDocList();
 }
 
-std::vector<CRDTNotes::DocID> CRDTNotesSync::getDocList(Contact3Handle c) {
+std::vector<CRDTNotes::DocID> CRDTNotesSync::getDocList(ContactHandle4 c) {
 	std::vector<CRDTNotes::DocID> list;
 
-	Contact3Handle parent;
+	ContactHandle4 parent;
 	if (c.all_of<Contact::Components::Parent>()) {
-		parent = Contact3Handle{*c.registry(), c.get<Contact::Components::Parent>().parent};
+		parent = ContactHandle4{*c.registry(), c.get<Contact::Components::Parent>().parent};
 	}
 
 	for (const auto& [k, v] : _docs_contacts) {

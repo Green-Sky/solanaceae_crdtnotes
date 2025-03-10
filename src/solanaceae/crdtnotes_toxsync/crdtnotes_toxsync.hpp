@@ -1,9 +1,8 @@
 #pragma once
 
-#include "solanaceae/crdtnotes/crdtnotes_sync.hpp"
-#include <solanaceae/crdtnotes/crdtnotes.hpp>
+#include <solanaceae/crdtnotes/crdtnotes_sync.hpp>
 #include <solanaceae/crdtnotes/crdtnotes_contact_sync_model.hpp>
-#include <solanaceae/contact/contact_model3.hpp>
+#include <solanaceae/contact/fwd.hpp>
 #include <solanaceae/toxcore/tox_event_interface.hpp>
 #include <solanaceae/tox_contacts/tox_contact_model2.hpp>
 
@@ -14,7 +13,7 @@ struct ToxEventProviderI;
 // implements CRDTNotesContactSyncModelI and attaches itself to tox contacts
 class CRDTNotesToxSync : public CRDTNotesContactSyncModelI, public ToxEventI {
 	CRDTNotesEventI& _notes_sync;
-	Contact3Registry& _cr;
+	ContactStore4I& _cs;
 	ToxI& _t;
 	ToxEventProviderI::SubscriptionReference _tep_sr;
 	ToxContactModel2& _tcm;
@@ -22,7 +21,7 @@ class CRDTNotesToxSync : public CRDTNotesContactSyncModelI, public ToxEventI {
 	public:
 		CRDTNotesToxSync(
 			CRDTNotesEventI& notes_sync,
-			Contact3Registry& cr,
+			ContactStore4I& cs,
 			ToxI& t,
 			ToxEventProviderI& tep,
 			ToxContactModel2& tcm
@@ -33,23 +32,23 @@ class CRDTNotesToxSync : public CRDTNotesContactSyncModelI, public ToxEventI {
 
 	public: // sync api
 		void SendGossip(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id
 		) override;
 
 		void SendGossip(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id,
 			const std::vector<CRDTNotes::Frontier>& selected_frontier
 		) override;
 
 		void SendFetchCompleteFrontier(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id
 		) override;
 
 		void SendFetchOps(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id,
 			const CRDTNotes::CRDTAgent& agent,
 			const uint64_t seq_from,
@@ -57,34 +56,34 @@ class CRDTNotesToxSync : public CRDTNotesContactSyncModelI, public ToxEventI {
 		) override;
 
 		void SendOps(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id,
 			const std::vector<CRDTNotes::Doc::Op>&
 		) override;
 
 	private:
 		bool parse_crdtn_gossip(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const uint8_t* data, size_t data_size,
 			bool _private
 		);
 		bool parse_crdtn_gossip_frontier(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const uint8_t* data, size_t data_size,
 			bool _private
 		);
 		bool parse_crdtn_fetch_complete_frontier(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const uint8_t* data, size_t data_size,
 			bool _private
 		);
 		bool parse_crdtn_fetch_op_range(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const uint8_t* data, size_t data_size,
 			bool _private
 		);
 		bool parse_crdtn_ops(
-			Contact3Handle c,
+			ContactHandle4 c,
 			const uint8_t* data, size_t data_size,
 			bool _private
 		);

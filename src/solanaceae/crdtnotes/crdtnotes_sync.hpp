@@ -2,10 +2,15 @@
 
 #include "./crdtnotes.hpp"
 
-#include <solanaceae/contact/contact_model3.hpp>
+#include <solanaceae/contact/fwd.hpp>
+
+#include <entt/entity/registry.hpp>
+#include <entt/entity/handle.hpp>
 
 #include <set>
 #include <random>
+#include <unordered_map>
+#include <map>
 
 // fwd
 struct CRDTNotesContactSyncModelI;
@@ -14,7 +19,7 @@ namespace Events {
 
 	// - DocID
 	struct NGCEXT_crdtns_gossip {
-		Contact3Handle c;
+		ContactHandle4 c;
 		CRDTNotes::DocID doc_id;
 	};
 
@@ -24,14 +29,14 @@ namespace Events {
 	//   - seq (frontier)
 	// - ]
 	struct NGCEXT_crdtns_gossip_frontier {
-		Contact3Handle c;
+		ContactHandle4 c;
 		CRDTNotes::DocID doc_id;
 		std::vector<CRDTNotes::Frontier> selected_frontier;
 	};
 
 	// - DocID
 	struct NGCEXT_crdtns_fetch_complete_frontier {
-		Contact3Handle c;
+		ContactHandle4 c;
 		CRDTNotes::DocID doc_id;
 	};
 
@@ -40,7 +45,7 @@ namespace Events {
 	// - seq_from
 	// - seq_to
 	struct NGCEXT_crdtns_fetch_op_range {
-		Contact3Handle c;
+		ContactHandle4 c;
 		CRDTNotes::DocID doc_id;
 		CRDTNotes::CRDTAgent agent;
 		uint64_t seq_from;
@@ -52,7 +57,7 @@ namespace Events {
 	//   - op
 	// - ]
 	struct NGCEXT_crdtns_ops {
-		Contact3Handle c;
+		ContactHandle4 c;
 		CRDTNotes::DocID doc_id;
 		std::vector<CRDTNotes::Doc::Op> ops;
 	};
@@ -76,18 +81,24 @@ struct CRDTNotesEventI {
 class CRDTNotesSync final : public CRDTNotesEventI {
 	// pull inside????
 	CRDTNotes& _notes;
-	Contact3Registry& _cr;
+	ContactStore4I& _cs;
 
 	std::default_random_engine _rng;
 
-	std::unordered_map<CRDTNotes::DocID, std::set<Contact3Handle>> _docs_contacts;
+	std::unordered_map<CRDTNotes::DocID, std::set<ContactHandle4>> _docs_contacts;
+	struct Peer {
+		// global frontier
+		// what we know the peer knows(/gossiped) about
+		std::unordered_map<decltype(CRDTNotes::Frontier::agent), decltype(CRDTNotes::Frontier::seq)> other_frontier;
+	};
+	std::unordered_map<CRDTNotes::DocID, std::map<ContactHandle4, Peer>> _docs_peers;
 
 	// if a doc is eg new, it is added here
-	std::set<CRDTNotes::DocID> _gossip_queue;
+	std::set<CRDTNotes::DocID> _gossip_queue; // TODO: no
 	std::set<CRDTNotes::DocID> _fetch_frontier_queue;
 
 	public:
-		CRDTNotesSync(CRDTNotes& notes, Contact3Registry& cr);
+		CRDTNotesSync(CRDTNotes& notes, ContactStore4I& cs);
 
 		~CRDTNotesSync(void);
 
@@ -99,14 +110,14 @@ class CRDTNotesSync final : public CRDTNotesEventI {
 
 		// adds a doc and assosiates contact (and self)
 		// if secret, only self is added (and thats why contact is needed)
-		std::optional<CRDTNotes::DocID> addNewDoc(Contact3Handle c, bool secret = false);
+		std::optional<CRDTNotes::DocID> addNewDoc(ContactHandle4 c, bool secret = false);
 
 		// adds a doc by id to a contact
 		// (for gossip or manual add)
-		bool addDoc(const CRDTNotes::DocID& doc_id, Contact3Handle c);
+		bool addDoc(const CRDTNotes::DocID& doc_id, ContactHandle4 c);
 
 		std::vector<CRDTNotes::DocID> getDocList(void);
-		std::vector<CRDTNotes::DocID> getDocList(Contact3Handle c);
+		std::vector<CRDTNotes::DocID> getDocList(ContactHandle4 c);
 
 		void merge(const CRDTNotes::DocID& doc_id, std::string_view new_text);
 

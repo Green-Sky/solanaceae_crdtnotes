@@ -1,5 +1,6 @@
 #include "./crdtnotes_toxsync.hpp"
 
+#include <solanaceae/contact/contact_store_i.hpp>
 #include <solanaceae/toxcore/tox_interface.hpp>
 
 #include <solanaceae/tox_contacts/components.hpp>
@@ -39,11 +40,11 @@ enum class NGCEXT_Event : uint8_t {
 
 CRDTNotesToxSync::CRDTNotesToxSync(
 	CRDTNotesEventI& notes_sync,
-	Contact3Registry& cr,
+	ContactStore4I& cs,
 	ToxI& t,
 	ToxEventProviderI& tep,
 	ToxContactModel2& tcm
-) : _notes_sync(notes_sync), _cr(cr), _t(t), _tep_sr(tep.newSubRef(this)), _tcm(tcm) {
+) : _notes_sync(notes_sync), _cs(cs), _t(t), _tep_sr(tep.newSubRef(this)), _tcm(tcm) {
 	// TODO: non groups
 
 	// should be called for every peer (except self)
@@ -58,13 +59,13 @@ CRDTNotesToxSync::CRDTNotesToxSync(
 
 CRDTNotesToxSync::~CRDTNotesToxSync(void) {
 	// TODO: find a better way to remove dangling pointers
-	std::vector<Contact3> to_remove_self;
-	_cr.view<CRDTNotesContactSyncModelI*>().each([&to_remove_self, this](Contact3 c, const auto* csm) {
+	std::vector<Contact4> to_remove_self;
+	_cs.registry().view<CRDTNotesContactSyncModelI*>().each([&to_remove_self, this](Contact4 c, const auto* csm) {
 		if (this == csm) {
 			to_remove_self.push_back(c);
 		}
 	});
-	_cr.remove<CRDTNotesContactSyncModelI*>(to_remove_self.cbegin(), to_remove_self.cend());
+	_cs.registry().remove<CRDTNotesContactSyncModelI*>(to_remove_self.cbegin(), to_remove_self.cend());
 }
 
 float CRDTNotesToxSync::iterate(float time_delta) {
@@ -73,7 +74,7 @@ float CRDTNotesToxSync::iterate(float time_delta) {
 }
 
 void CRDTNotesToxSync::SendGossip(
-	Contact3Handle c,
+	ContactHandle4 c,
 	const CRDTNotes::DocID& doc_id
 ) {
 	if (!c.all_of<Contact::Components::ToxGroupPeerEphemeral>()) {
@@ -98,7 +99,7 @@ void CRDTNotesToxSync::SendGossip(
 }
 
 void CRDTNotesToxSync::SendGossip(
-	Contact3Handle c,
+	ContactHandle4 c,
 	const CRDTNotes::DocID& doc_id,
 	const std::vector<CRDTNotes::Frontier>& selected_frontier
 ) {
@@ -139,7 +140,7 @@ void CRDTNotesToxSync::SendGossip(
 }
 
 void CRDTNotesToxSync::SendFetchCompleteFrontier(
-	Contact3Handle c,
+	ContactHandle4 c,
 	const CRDTNotes::DocID& doc_id
 ) {
 	if (!c.all_of<Contact::Components::ToxGroupPeerEphemeral>()) {
@@ -164,7 +165,7 @@ void CRDTNotesToxSync::SendFetchCompleteFrontier(
 }
 
 void CRDTNotesToxSync::SendFetchOps(
-	Contact3Handle c,
+	ContactHandle4 c,
 	const CRDTNotes::DocID& doc_id,
 	const CRDTNotes::CRDTAgent& agent,
 	const uint64_t seq_from,
@@ -207,7 +208,7 @@ void CRDTNotesToxSync::SendFetchOps(
 }
 
 void CRDTNotesToxSync::SendOps(
-	Contact3Handle c,
+	ContactHandle4 c,
 	const CRDTNotes::DocID& doc_id,
 	const std::vector<CRDTNotes::Doc::Op>& ops
 ) {
@@ -288,7 +289,7 @@ void CRDTNotesToxSync::SendOps(
 }
 
 bool CRDTNotesToxSync::parse_crdtn_gossip(
-	Contact3Handle c,
+	ContactHandle4 c,
 	const uint8_t* data, size_t data_size,
 	bool // dont care private
 ) {
@@ -313,7 +314,7 @@ bool CRDTNotesToxSync::parse_crdtn_gossip(
 }
 
 bool CRDTNotesToxSync::parse_crdtn_gossip_frontier(
-	Contact3Handle c,
+	ContactHandle4 c,
 	const uint8_t* data, size_t data_size,
 	bool // dont care private
 ) {
@@ -351,7 +352,7 @@ bool CRDTNotesToxSync::parse_crdtn_gossip_frontier(
 }
 
 bool CRDTNotesToxSync::parse_crdtn_fetch_complete_frontier(
-	Contact3Handle c,
+	ContactHandle4 c,
 	const uint8_t* data, size_t data_size,
 	bool // dont care private
 ) {
@@ -371,7 +372,7 @@ bool CRDTNotesToxSync::parse_crdtn_fetch_complete_frontier(
 }
 
 bool CRDTNotesToxSync::parse_crdtn_fetch_op_range(
-	Contact3Handle c,
+	ContactHandle4 c,
 	const uint8_t* data, size_t data_size,
 	bool // dont care private
 ) {
@@ -408,7 +409,7 @@ bool CRDTNotesToxSync::parse_crdtn_fetch_op_range(
 }
 
 bool CRDTNotesToxSync::parse_crdtn_ops(
-	Contact3Handle c,
+	ContactHandle4 c,
 	const uint8_t* data, size_t data_size,
 	bool // dont care private
 ) {

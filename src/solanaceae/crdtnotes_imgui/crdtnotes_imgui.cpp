@@ -1,5 +1,6 @@
 #include "./crdtnotes_imgui.hpp"
 
+#include <solanaceae/contact/contact_store_i.hpp>
 #include <solanaceae/contact/components.hpp>
 
 #include <cstdint>
@@ -47,7 +48,7 @@ namespace detail {
 } // detail
 
 
-CRDTNotesImGui::CRDTNotesImGui(CRDTNotesSync& notes_sync, Contact3Registry& cr) : _notes_sync(notes_sync), _cr(cr) {
+CRDTNotesImGui::CRDTNotesImGui(CRDTNotesSync& notes_sync, ContactStore4I& cs) : _notes_sync(notes_sync), _cs(cs) {
 }
 
 float CRDTNotesImGui::render(void) {
@@ -58,7 +59,7 @@ float CRDTNotesImGui::render(void) {
 			}
 
 			if (ImGui::BeginPopup("create new doc contact")) {
-				for (const auto& c : _cr.view<Contact::Components::TagBig>()) {
+				for (const auto& c : _cs.registry().view<Contact::Components::TagBig>()) {
 					if (renderContactListContactSmall(c, false)) {
 						//const auto& self = _cr.get<Contact::Components::Self>(c).self;
 						//assert(_cr.all_of<Contact::Components::ID>(self));
@@ -76,7 +77,7 @@ float CRDTNotesImGui::render(void) {
 							//// tox id (id from self)
 							//self_agent_id
 						//);
-						_notes_sync.addNewDoc({_cr, c}, false);
+						_notes_sync.addNewDoc(_cs.contactHandle(c), false);
 
 						//// and open the doc
 					}
@@ -122,10 +123,12 @@ float CRDTNotesImGui::render(void) {
 	return 1.f;
 }
 
-bool CRDTNotesImGui::renderContactListContactSmall(const Contact3 c, const bool selected) const {
+bool CRDTNotesImGui::renderContactListContactSmall(const Contact4 c, const bool selected) const {
 	std::string label;
 
-	label += (_cr.all_of<Contact::Components::Name>(c) ? _cr.get<Contact::Components::Name>(c).name.c_str() : "<unk>");
+	const auto& cr = _cs.registry();
+
+	label += (cr.all_of<Contact::Components::Name>(c) ? cr.get<Contact::Components::Name>(c).name.c_str() : "<unk>");
 	label += "###";
 	label += std::to_string(entt::to_integral(c));
 

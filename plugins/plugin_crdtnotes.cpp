@@ -32,12 +32,12 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 	}
 
 	try {
-		auto* cr = PLUG_RESOLVE_INSTANCE_VERSIONED(Contact3Registry, "1");
+		auto* cs = PLUG_RESOLVE_INSTANCE(ContactStore4I);
 
 		// static store, could be anywhere tho
 		// construct with fetched dependencies
 		g_crdtn = std::make_unique<CRDTNotes>();
-		g_crdtns = std::make_unique<CRDTNotesSync>(*g_crdtn, *cr);
+		g_crdtns = std::make_unique<CRDTNotesSync>(*g_crdtn, *cs);
 
 		// register types
 		PLUG_PROVIDE_INSTANCE(CRDTNotesSync, plugin_name, g_crdtns.get());
