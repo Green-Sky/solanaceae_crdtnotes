@@ -1,6 +1,9 @@
 #include <solanaceae/plugin/solana_plugin_v1.h>
 
+#include <solanaceae/contact/contact_store_i.hpp>
+
 #include <solanaceae/crdtnotes_imgui/crdtnotes_imgui.hpp>
+
 #include <imgui.h>
 
 #include <entt/entt.hpp>
