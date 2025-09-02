@@ -6,6 +6,7 @@
 #include <set>
 
 class CRDTNotesImGui {
+	CRDTNotes& _notes;
 	CRDTNotesSync& _notes_sync;
 	ContactStore4I& _cs;
 
@@ -14,7 +15,7 @@ class CRDTNotesImGui {
 	std::set<CRDTNotes::DocID> _open_docs;
 
 	public:
-		CRDTNotesImGui(CRDTNotesSync& notes_sync, ContactStore4I& cs);
+		CRDTNotesImGui(CRDTNotes& notes, CRDTNotesSync& notes_sync, ContactStore4I& cs);
 
 		float render(void);
 

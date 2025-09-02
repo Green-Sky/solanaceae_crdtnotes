@@ -35,6 +35,7 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 	}
 
 	try {
+		auto* crdtn = PLUG_RESOLVE_INSTANCE(CRDTNotes);
 		auto* crdtns = PLUG_RESOLVE_INSTANCE(CRDTNotesSync);
 		auto* cs = PLUG_RESOLVE_INSTANCE(ContactStore4I);
 		auto* imguic = PLUG_RESOLVE_INSTANCE_VERSIONED(ImGuiContext, ImGui::GetVersion());
@@ -48,7 +49,7 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 
 		// static store, could be anywhere tho
 		// construct with fetched dependencies
-		g_crdtn_imgui = std::make_unique<CRDTNotesImGui>(*crdtns, *cs);
+		g_crdtn_imgui = std::make_unique<CRDTNotesImGui>(*crdtn, *crdtns, *cs);
 
 		// register types
 		PLUG_PROVIDE_INSTANCE(CRDTNotesImGui, plugin_name, g_crdtn_imgui.get());

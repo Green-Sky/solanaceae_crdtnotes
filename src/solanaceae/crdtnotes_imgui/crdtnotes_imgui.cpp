@@ -48,7 +48,7 @@ namespace detail {
 } // detail
 
 
-CRDTNotesImGui::CRDTNotesImGui(CRDTNotesSync& notes_sync, ContactStore4I& cs) : _notes_sync(notes_sync), _cs(cs) {
+CRDTNotesImGui::CRDTNotesImGui(CRDTNotes& notes, CRDTNotesSync& notes_sync, ContactStore4I& cs) : _notes(notes), _notes_sync(notes_sync), _cs(cs) {
 }
 
 float CRDTNotesImGui::render(void) {

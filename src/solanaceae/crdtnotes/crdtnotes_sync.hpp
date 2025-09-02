@@ -62,6 +62,11 @@ namespace Events {
 		std::vector<CRDTNotes::Doc::Op> ops;
 	};
 
+	// TODO: curser
+	// - DocID
+	// - AgentID
+	// - CRDTNotes::Doc::ListType::ListID parent_left
+
 } // Events
 
 // this is different than other "i might not handle this" event interfaces
