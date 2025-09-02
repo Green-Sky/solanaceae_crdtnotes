@@ -9,7 +9,6 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-#include <iostream>
 #include <cassert>
 
 namespace detail {
@@ -167,11 +166,11 @@ bool CRDTNotesImGui::renderDoc(const CRDTNotes::DocID& doc_id) {
 		// TODO: check
 		_held_locks.emplace(_notes.writeLockAquire(doc_id).value());
 		self_held = true;
-		std::cout << "!!!! imgui lock aquired\n";
+		//std::cout << "!!!! imgui lock aquired\n";
 	} else if (!foreign_held && self_held && !(ImGui::IsItemActive() || ImGui::IsItemEdited())) {
 		// release lock
 		_held_locks.erase(lock_it);
-		std::cout << "!!!! imgui lock released\n";
+		//std::cout << "!!!! imgui lock released\n";
 	}
 
 	if (self_held && ImGui::IsItemEdited()) {
