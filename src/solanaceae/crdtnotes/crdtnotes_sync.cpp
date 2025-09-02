@@ -38,7 +38,11 @@ float CRDTNotesSync::iterate(float time_delta) {
 					// TODO: this is a fallback, remove
 					if (c.all_of<Contact::Components::ParentOf>()) {
 						for (const auto child : c.get<Contact::Components::ParentOf>().subs) {
+							if (c.registry()->all_of<Contact::Components::TagSelfStrong>(child)) {
+								continue;
+							}
 							if (!c.registry()->all_of<CRDTNotesContactSyncModelI*>(child)) {
+								std::cerr << "CRDTNotesSync: error, fallback failed\n";
 								continue;
 							}
 
@@ -65,7 +69,11 @@ float CRDTNotesSync::iterate(float time_delta) {
 					// TODO: this is a fallback, remove
 					if (c.all_of<Contact::Components::ParentOf>()) {
 						for (const auto child : c.get<Contact::Components::ParentOf>().subs) {
+							if (c.registry()->all_of<Contact::Components::TagSelfStrong>(child)) {
+								continue;
+							}
 							if (!c.registry()->all_of<CRDTNotesContactSyncModelI*>(child)) {
+								std::cerr << "CRDTNotesSync: error, fallback failed\n";
 								continue;
 							}
 
