@@ -37,3 +37,20 @@ CRDTNotes::Doc* CRDTNotes::addDoc(const CRDTAgent& self_agent, const DocID& id) 
 	return &doc;
 }
 
+void CRDTNotes::writeLockRelease(const DocID& id) {
+	assert(_doc_write_locks.count(id) > 0);
+	_doc_write_locks.erase(id);
+}
+
+bool CRDTNotes::isWriteLocked(const DocID& id) const {
+	return _doc_write_locks.count(id);
+}
+
+std::optional<CRDTNotes::DocWriteLock> CRDTNotes::writeLockAquire(const DocID& id) {
+	if (_doc_write_locks.count(id)) {
+		return std::nullopt; // replace with exception instead?
+	}
+
+	_doc_write_locks.emplace(id);
+	return DocWriteLock{*this, id};
+}

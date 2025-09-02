@@ -48,6 +48,12 @@ namespace detail {
 } // detail
 
 
+std::unordered_set<CRDTNotes::DocWriteLock>::iterator CRDTNotesImGui::findLock(const CRDTNotes::DocID& doc_id) {
+	auto it = _held_locks.begin();
+	for (; it != _held_locks.end() && it->id != doc_id; it++) {}
+	return it;
+}
+
 CRDTNotesImGui::CRDTNotesImGui(CRDTNotes& notes, CRDTNotesSync& notes_sync, ContactStore4I& cs) : _notes(notes), _notes_sync(notes_sync), _cs(cs) {
 }
 
@@ -142,17 +148,36 @@ bool CRDTNotesImGui::renderDoc(const CRDTNotes::DocID& doc_id) {
 		return false;
 	}
 
+	auto lock_it = findLock(doc_id);
+	bool self_held = lock_it != _held_locks.end();
+	const bool foreign_held = !self_held && _notes.isWriteLocked(doc_id);
+
 	auto text = doc->getText();
-	if (renderDocText(text)) {
+	ImGui::InputTextMultiline(
+		"##doc",
+		&text,
+		{-1,-1},
+			ImGuiInputTextFlags_AllowTabInput |
+			(foreign_held ? ImGuiInputTextFlags_ReadOnly : ImGuiInputTextFlags_None) |
+			ImGuiInputTextFlags_CallbackAlways
+		//cb,
+		//&text
+	);
+	if (!foreign_held && !self_held && (ImGui::IsItemActive() || ImGui::IsItemEdited())) {
+		// TODO: check
+		_held_locks.emplace(_notes.writeLockAquire(doc_id).value());
+		self_held = true;
+		std::cout << "!!!! imgui lock aquired\n";
+	} else if (!foreign_held && self_held && !(ImGui::IsItemActive() || ImGui::IsItemEdited())) {
+		// release lock
+		_held_locks.erase(lock_it);
+		std::cout << "!!!! imgui lock released\n";
+	}
+
+	if (self_held && ImGui::IsItemEdited()) {
 		_notes_sync.merge(doc_id, text);
 		return true;
 	}
 
 	return false;
 }
-
-bool CRDTNotesImGui::renderDocText(std::string& text) const {
-	// TODO: replace with text editor (zep) or visualize stuff??
-	return ImGui::InputTextMultiline("##doc", &text, {-1,-1}, ImGuiInputTextFlags_AllowTabInput);
-}
-

@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <functional>
 #include <unordered_map>
+#include <unordered_set>
+#include <optional>
 
 using ID32 = std::array<uint8_t, 32>;
 
@@ -37,9 +39,23 @@ class CRDTNotes {
 			uint64_t seq{0};
 		};
 
+		// RAII lock wrapper
+		struct DocWriteLock {
+			CRDTNotes* notes;
+			DocID id;
+
+			// ctr assumes lock
+			DocWriteLock(CRDTNotes& notes, const DocID& id) : notes(&notes), id(id) {}
+			DocWriteLock(const DocWriteLock&) = delete;
+			DocWriteLock(DocWriteLock&& other) : notes(other.notes), id(other.id) { other.notes = nullptr; }
+			~DocWriteLock(void) { if (notes) { notes->writeLockRelease(id); } }
+			bool operator==(const DocWriteLock& other) const { return id == other.id; }
+		};
+
 	private:
 		// TODO: add metadata to docs
 		std::unordered_map<DocID, Doc> _docs;
+		std::unordered_set<DocID> _doc_write_locks;
 
 	public:
 		// config?
@@ -52,5 +68,16 @@ class CRDTNotes {
 		Doc* getDoc(const DocID& id);
 
 		Doc* addDoc(const CRDTAgent& self_agent, const DocID& doc);
+
+		void writeLockRelease(const DocID& id);
+		bool isWriteLocked(const DocID& id) const;
+		std::optional<DocWriteLock> writeLockAquire(const DocID& id);
+};
+
+template<>
+struct std::hash<CRDTNotes::DocWriteLock> {
+	std::uint64_t operator()(const CRDTNotes::DocWriteLock& s) const noexcept {
+		return std::hash<ID32>{}(s.id);
+	}
 };
 
