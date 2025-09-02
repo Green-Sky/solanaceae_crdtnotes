@@ -98,6 +98,9 @@ class CRDTNotesSync final : public CRDTNotesEventI {
 	};
 	std::unordered_map<CRDTNotes::DocID, std::map<ContactHandle4, Peer>> _docs_peers;
 
+	// queue of unapplied ops, kept here until write lock can be aquired
+	std::unordered_map<CRDTNotes::DocID, std::vector<CRDTNotes::Doc::Op>> _docs_incoming_ops;
+
 	// if a doc is eg new, it is added here
 	std::set<CRDTNotes::DocID> _gossip_queue; // TODO: no
 	std::set<CRDTNotes::DocID> _fetch_frontier_queue;
