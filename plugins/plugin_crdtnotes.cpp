@@ -42,6 +42,7 @@ SOLANA_PLUGIN_EXPORT uint32_t solana_plugin_start(struct SolanaAPI* solana_api) 
 		g_crdtns = std::make_unique<CRDTNotesSync>(*g_crdtn, *cs);
 
 		// register types
+		PLUG_PROVIDE_INSTANCE(CRDTNotes, plugin_name, g_crdtn.get());
 		PLUG_PROVIDE_INSTANCE(CRDTNotesSync, plugin_name, g_crdtns.get());
 		PLUG_PROVIDE_INSTANCE(CRDTNotesEventI, plugin_name, g_crdtns.get());
 	} catch (const ResolveException& e) {

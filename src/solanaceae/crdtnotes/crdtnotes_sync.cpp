@@ -81,7 +81,7 @@ float CRDTNotesSync::iterate(float time_delta) {
 		_fetch_frontier_queue.erase(it);
 	}
 
-	return 1.f;
+	return 2.f;
 }
 
 CRDTNotes::Doc* CRDTNotesSync::getDoc(const CRDTNotes::DocID& doc_id) {

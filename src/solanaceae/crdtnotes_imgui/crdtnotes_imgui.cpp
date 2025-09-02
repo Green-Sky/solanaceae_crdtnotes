@@ -106,6 +106,7 @@ float CRDTNotesImGui::render(void) {
 			const std::string docid_str = "Doc " + detail::to_hex(docid);
 			bool open = true;
 
+			ImGui::SetNextWindowSize({200, 200}, ImGuiCond_Appearing);
 			if (ImGui::Begin(docid_str.c_str(), &open)) {
 				renderDoc(docid);
 			}
@@ -120,7 +121,7 @@ float CRDTNotesImGui::render(void) {
 		}
 	}
 
-	return 1.f;
+	return 2.f;
 }
 
 bool CRDTNotesImGui::renderContactListContactSmall(const Contact4 c, const bool selected) const {
