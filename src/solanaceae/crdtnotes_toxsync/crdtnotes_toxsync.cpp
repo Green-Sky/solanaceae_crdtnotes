@@ -16,6 +16,7 @@ enum class NGCEXT_Event : uint8_t {
 	// - array [
 	//   - AgentID
 	//   - seq (frontier)
+	//   - del_num
 	// - ]
 	CRDTN_GOSSIP_FRONTIER,
 
@@ -26,7 +27,11 @@ enum class NGCEXT_Event : uint8_t {
 	// - AgentID
 	// - seq_from
 	// - seq_to
-	CRDTN_FETCH_OP_RANGE,
+	CRDTN_FETCH_ADD_RANGE,
+
+	// - DocID
+	// - AgentID
+	CRDTN_FETCH_DEL,
 
 	// - DocID
 	// - array [
@@ -101,7 +106,7 @@ void CRDTNotesToxSync::SendGossip(
 void CRDTNotesToxSync::SendGossip(
 	ContactHandle4 c,
 	const CRDTNotes::DocID& doc_id,
-	const std::vector<CRDTNotes::Frontier>& selected_frontier
+	const std::vector<CRDTNotes::Frontier>& frontier
 ) {
 	if (!c.all_of<Contact::Components::ToxGroupPeerEphemeral>()) {
 		return;
@@ -117,7 +122,7 @@ void CRDTNotesToxSync::SendGossip(
 	}
 	// +32
 
-	for (const auto& [f_id, f_seq] : selected_frontier) {
+	for (const auto& [f_id, f_seq, del_num] : frontier) {
 		for (const uint8_t v : f_id) {
 			pkg.push_back(v);
 		}
@@ -127,8 +132,13 @@ void CRDTNotesToxSync::SendGossip(
 			pkg.push_back((f_seq >> i*8) & 0xff);
 		}
 		// +8
+
+		for (size_t i = 0; i < sizeof(del_num); i++) {
+			pkg.push_back((del_num >> i*8) & 0xff);
+		}
+		// +8
 	}
-	// +40
+	// +48
 
 	// send
 	const auto& gp = c.get<Contact::Components::ToxGroupPeerEphemeral>();
@@ -164,7 +174,7 @@ void CRDTNotesToxSync::SendFetchCompleteFrontier(
 	);
 }
 
-void CRDTNotesToxSync::SendFetchOps(
+void CRDTNotesToxSync::SendFetchAddRange(
 	ContactHandle4 c,
 	const CRDTNotes::DocID& doc_id,
 	const CRDTNotes::CRDTAgent& agent,
@@ -177,7 +187,7 @@ void CRDTNotesToxSync::SendFetchOps(
 
 	std::vector<uint8_t> pkg;
 
-	pkg.push_back(static_cast<uint8_t>(NGCEXT_Event::CRDTN_FETCH_OP_RANGE));
+	pkg.push_back(static_cast<uint8_t>(NGCEXT_Event::CRDTN_FETCH_ADD_RANGE));
 
 	for (const uint8_t v : doc_id) {
 		pkg.push_back(v);
@@ -207,6 +217,35 @@ void CRDTNotesToxSync::SendFetchOps(
 	);
 }
 
+void CRDTNotesToxSync::SendFetchDel(
+	ContactHandle4 c,
+	const CRDTNotes::DocID& doc_id,
+	const CRDTNotes::CRDTAgent& agent
+) {
+	if (!c.all_of<Contact::Components::ToxGroupPeerEphemeral>()) {
+		return;
+	}
+
+	std::vector<uint8_t> pkg;
+
+	pkg.push_back(static_cast<uint8_t>(NGCEXT_Event::CRDTN_FETCH_DEL));
+
+	for (const uint8_t v : doc_id) {
+		pkg.push_back(v);
+	}
+
+	for (const uint8_t v : agent) {
+		pkg.push_back(v);
+	}
+
+	const auto& gp = c.get<Contact::Components::ToxGroupPeerEphemeral>();
+	_t.toxGroupSendCustomPrivatePacket(
+		gp.group_number, gp.peer_number,
+		true,
+		pkg
+	);
+}
+
 void CRDTNotesToxSync::SendOps(
 	ContactHandle4 c,
 	const CRDTNotes::DocID& doc_id,
@@ -228,6 +267,7 @@ void CRDTNotesToxSync::SendOps(
 
 	// this is very inefficent
 	// a full add op is 124bytes like this
+	// a full del op is 41bytes
 	for (const auto& op : ops) {
 		if(std::holds_alternative<CRDTNotes::Doc::OpAdd>(op)) {
 			const auto& add_op = std::get<CRDTNotes::Doc::OpAdd>(op);
@@ -332,7 +372,7 @@ bool CRDTNotesToxSync::parse_crdtn_gossip_frontier(
 
 	while (curser < data_size) {
 		CRDTNotes::Frontier new_f;
-		_DATA_HAVE(new_f.agent.size() * sizeof(CRDTNotes::CRDTAgent::value_type) + sizeof(new_f.seq), std::cerr << "NGCEXT: packet malformed, not enough data for forntier\n"; return false;)
+		_DATA_HAVE(new_f.agent.size() * sizeof(CRDTNotes::CRDTAgent::value_type) + sizeof(new_f.seq) + sizeof(new_f.del_num), std::cerr << "NGCEXT: packet malformed, not enough data for frontier\n"; return false;)
 
 		for (size_t i = 0; i < new_f.agent.size(); i++, curser++) {
 			new_f.agent[i] = data[curser];
@@ -343,7 +383,12 @@ bool CRDTNotesToxSync::parse_crdtn_gossip_frontier(
 			new_f.seq |= uint64_t(data[curser]) << i*8;
 		}
 
-		e.selected_frontier.emplace_back(std::move(new_f));
+		new_f.del_num = 0;
+		for (size_t i = 0; i < sizeof(new_f.del_num); i++, curser++) {
+			new_f.del_num |= uint64_t(data[curser]) << i*8;
+		}
+
+		e.frontier.emplace_back(std::move(new_f));
 	}
 
 	std::cout << "CRDTN gossip_frontier parsed\n";
@@ -371,12 +416,12 @@ bool CRDTNotesToxSync::parse_crdtn_fetch_complete_frontier(
 	return true;
 }
 
-bool CRDTNotesToxSync::parse_crdtn_fetch_op_range(
+bool CRDTNotesToxSync::parse_crdtn_fetch_add_range(
 	ContactHandle4 c,
 	const uint8_t* data, size_t data_size,
 	bool // dont care private
 ) {
-	Events::NGCEXT_crdtns_fetch_op_range e;
+	Events::NGCEXT_crdtns_fetch_add_range e;
 	e.c = c;
 
 	size_t curser = 0;
@@ -403,7 +448,32 @@ bool CRDTNotesToxSync::parse_crdtn_fetch_op_range(
 		e.seq_to |= uint64_t(data[curser]) << i*8;
 	}
 
-	std::cout << "CRDTN fetch_op_range parsed\n";
+	std::cout << "CRDTN fetch_add_range parsed\n";
+	_notes_sync.onCRDTNSyncEvent(std::move(e));
+	return true;
+}
+
+bool CRDTNotesToxSync::parse_crdtn_fetch_del(
+	ContactHandle4 c,
+	const uint8_t* data, size_t data_size,
+	bool // dont care private
+) {
+	Events::NGCEXT_crdtns_fetch_del e;
+	e.c = c;
+
+	size_t curser = 0;
+
+	_DATA_HAVE(e.doc_id.size() * sizeof(decltype(e.doc_id)::value_type), std::cerr << "NGCEXT: packet too small, missing doc_id\n"; return false;)
+	for (size_t i = 0; i < e.doc_id.size(); i++, curser++) {
+		e.doc_id[i] = data[curser];
+	}
+
+	_DATA_HAVE(e.agent.size() * sizeof(decltype(e.agent)::value_type), std::cerr << "NGCEXT: packet too small, missing agent\n"; return false;)
+	for (size_t i = 0; i < e.agent.size(); i++, curser++) {
+		e.agent[i] = data[curser];
+	}
+
+	std::cout << "CRDTN fetch_del parsed\n";
 	_notes_sync.onCRDTNSyncEvent(std::move(e));
 	return true;
 }
@@ -531,8 +601,10 @@ bool CRDTNotesToxSync::handlePacket(
 			return parse_crdtn_gossip_frontier(c, data+1, data_size-1, _private);
 		case NGCEXT_Event::CRDTN_FETCH_COMPLETE_FRONTIER:
 			return parse_crdtn_fetch_complete_frontier(c, data+1, data_size-1, _private);
-		case NGCEXT_Event::CRDTN_FETCH_OP_RANGE:
-			return parse_crdtn_fetch_op_range(c, data+1, data_size-1, _private);
+		case NGCEXT_Event::CRDTN_FETCH_ADD_RANGE:
+			return parse_crdtn_fetch_add_range(c, data+1, data_size-1, _private);
+		case NGCEXT_Event::CRDTN_FETCH_DEL:
+			return parse_crdtn_fetch_del(c, data+1, data_size-1, _private);
 		case NGCEXT_Event::CRDTN_OPS:
 			return parse_crdtn_ops(c, data+1, data_size-1, _private);
 		default:

@@ -19,7 +19,7 @@ struct CRDTNotesContactSyncModelI {
 		virtual void SendGossip(
 			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id,
-			const std::vector<CRDTNotes::Frontier>& selected_frontier
+			const std::vector<CRDTNotes::Frontier>& frontier
 		) = 0;
 
 	// fetch
@@ -31,12 +31,18 @@ struct CRDTNotesContactSyncModelI {
 		) = 0;
 
 		// action range request
-		virtual void SendFetchOps(
+		virtual void SendFetchAddRange(
 			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id,
 			const CRDTNotes::CRDTAgent& agent,
 			const uint64_t seq_from,
 			const uint64_t seq_to
+		) = 0;
+
+		virtual void SendFetchDel(
+			ContactHandle4 c,
+			const CRDTNotes::DocID& doc_id,
+			const CRDTNotes::CRDTAgent& agent
 		) = 0;
 
 	public: // ops response

@@ -27,11 +27,12 @@ namespace Events {
 	// - array [
 	//   - AgentID
 	//   - seq (frontier)
+	//   - del_num
 	// - ]
 	struct NGCEXT_crdtns_gossip_frontier {
 		ContactHandle4 c;
 		CRDTNotes::DocID doc_id;
-		std::vector<CRDTNotes::Frontier> selected_frontier;
+		std::vector<CRDTNotes::Frontier> frontier;
 	};
 
 	// - DocID
@@ -44,12 +45,20 @@ namespace Events {
 	// - AgentID
 	// - seq_from
 	// - seq_to
-	struct NGCEXT_crdtns_fetch_op_range {
+	struct NGCEXT_crdtns_fetch_add_range {
 		ContactHandle4 c;
 		CRDTNotes::DocID doc_id;
 		CRDTNotes::CRDTAgent agent;
 		uint64_t seq_from;
 		uint64_t seq_to;
+	};
+
+	// - DocID
+	// - AgentID
+	struct NGCEXT_crdtns_fetch_del {
+		ContactHandle4 c;
+		CRDTNotes::DocID doc_id;
+		CRDTNotes::CRDTAgent agent;
 	};
 
 	// - DocID
@@ -76,7 +85,8 @@ struct CRDTNotesEventI {
 	virtual void onCRDTNSyncEvent(Events::NGCEXT_crdtns_gossip&& e) = 0;
 	virtual void onCRDTNSyncEvent(Events::NGCEXT_crdtns_gossip_frontier&& e) = 0;
 	virtual void onCRDTNSyncEvent(Events::NGCEXT_crdtns_fetch_complete_frontier&& e) = 0;
-	virtual void onCRDTNSyncEvent(Events::NGCEXT_crdtns_fetch_op_range&& e) = 0;
+	virtual void onCRDTNSyncEvent(Events::NGCEXT_crdtns_fetch_add_range&& e) = 0;
+	virtual void onCRDTNSyncEvent(Events::NGCEXT_crdtns_fetch_del&& e) = 0;
 	virtual void onCRDTNSyncEvent(Events::NGCEXT_crdtns_ops&& e) = 0;
 };
 
@@ -133,7 +143,8 @@ class CRDTNotesSync final : public CRDTNotesEventI {
 		void onCRDTNSyncEvent(Events::NGCEXT_crdtns_gossip&& e) override;
 		void onCRDTNSyncEvent(Events::NGCEXT_crdtns_gossip_frontier&& e) override;
 		void onCRDTNSyncEvent(Events::NGCEXT_crdtns_fetch_complete_frontier&& e) override;
-		void onCRDTNSyncEvent(Events::NGCEXT_crdtns_fetch_op_range&& e) override;
+		void onCRDTNSyncEvent(Events::NGCEXT_crdtns_fetch_add_range&& e) override;
+		void onCRDTNSyncEvent(Events::NGCEXT_crdtns_fetch_del&& e) override;
 		void onCRDTNSyncEvent(Events::NGCEXT_crdtns_ops&& e) override;
 };
 

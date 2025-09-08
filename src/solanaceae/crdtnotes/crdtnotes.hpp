@@ -37,6 +37,7 @@ class CRDTNotes {
 		struct Frontier { // newest known seq for given agent
 			CRDTAgent agent;
 			uint64_t seq{0};
+			uint64_t del_num{0};
 		};
 
 		// RAII lock wrapper

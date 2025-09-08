@@ -39,7 +39,7 @@ class CRDTNotesToxSync : public CRDTNotesContactSyncModelI, public ToxEventI {
 		void SendGossip(
 			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id,
-			const std::vector<CRDTNotes::Frontier>& selected_frontier
+			const std::vector<CRDTNotes::Frontier>& frontier
 		) override;
 
 		void SendFetchCompleteFrontier(
@@ -47,12 +47,18 @@ class CRDTNotesToxSync : public CRDTNotesContactSyncModelI, public ToxEventI {
 			const CRDTNotes::DocID& doc_id
 		) override;
 
-		void SendFetchOps(
+		void SendFetchAddRange(
 			ContactHandle4 c,
 			const CRDTNotes::DocID& doc_id,
 			const CRDTNotes::CRDTAgent& agent,
 			const uint64_t seq_from,
 			const uint64_t seq_to
+		) override;
+
+		void SendFetchDel(
+			ContactHandle4 c,
+			const CRDTNotes::DocID& doc_id,
+			const CRDTNotes::CRDTAgent& agent
 		) override;
 
 		void SendOps(
@@ -77,7 +83,12 @@ class CRDTNotesToxSync : public CRDTNotesContactSyncModelI, public ToxEventI {
 			const uint8_t* data, size_t data_size,
 			bool _private
 		);
-		bool parse_crdtn_fetch_op_range(
+		bool parse_crdtn_fetch_add_range(
+			ContactHandle4 c,
+			const uint8_t* data, size_t data_size,
+			bool _private
+		);
+		bool parse_crdtn_fetch_del(
 			ContactHandle4 c,
 			const uint8_t* data, size_t data_size,
 			bool _private
